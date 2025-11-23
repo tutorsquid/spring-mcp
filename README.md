@@ -10,7 +10,8 @@ The Model Context Protocol (MCP) is an open protocol that enables AI assistants 
 
 - **Spring AI MCP Integration**: Built on `spring-ai-mcp-server-webflux-spring-boot-starter`
 - **Annotation-Driven Tools**: Use `@McpTool` annotations for automatic tool registration
-- **WebFlux SSE Transport**: Server-Sent Events (SSE) support with reactive Spring WebFlux
+- **Stateless Protocol**: Simple request/response protocol for reliable tool execution
+- **WebFlux Transport**: Reactive Spring WebFlux for efficient request handling
 - **Zero Boilerplate**: No manual JSON-RPC handling or callback registration
 - **Built-in Tools**: Calculator (add, subtract, multiply, divide), echo, time, and random number
 - **Spring Boot Actuator**: Production-ready health checks and monitoring endpoints
@@ -202,7 +203,7 @@ server.port=8080
 spring.ai.mcp.server.name=spring-mcp-server
 spring.ai.mcp.server.version=1.0.0
 spring.ai.mcp.server.type=ASYNC
-spring.ai.mcp.server.protocol=STREAMABLE
+spring.ai.mcp.server.protocol=STATELESS
 
 # Actuator endpoints
 management.endpoints.web.exposure.include=health,info
@@ -220,22 +221,22 @@ logging.level.com.example.mcpserver=DEBUG
 | `spring.ai.mcp.server.name` | Server name | - |
 | `spring.ai.mcp.server.version` | Server version | - |
 | `spring.ai.mcp.server.type` | Server type (ASYNC or SYNC) | SYNC |
-| `spring.ai.mcp.server.protocol` | Protocol (STREAMABLE or STANDARD) | STANDARD |
+| `spring.ai.mcp.server.protocol` | Protocol (STATELESS or STREAMABLE) | STATELESS |
 
 ## MCP Endpoints
 
-### SSE Endpoint
+### MCP Endpoint
 
-The Spring AI MCP server automatically exposes an SSE endpoint at:
+The Spring AI MCP server automatically exposes an MCP endpoint at:
 
 ```
 http://localhost:8080/mcp
 ```
 
-This endpoint implements the Model Context Protocol over Server-Sent Events, allowing AI clients to:
+This endpoint implements the Model Context Protocol in stateless mode, allowing AI clients to:
 - List available tools
 - Call tools with parameters
-- Receive results
+- Receive results in simple request/response format
 
 ## Actuator Endpoints
 
