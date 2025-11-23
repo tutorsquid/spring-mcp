@@ -13,6 +13,7 @@ The Model Context Protocol (MCP) is an open protocol that enables AI assistants 
 - **Built-in Tools**: Sample tools including calculator, echo, time, and random number generator
 - **Resource Support**: Example resource implementation
 - **Spring Boot Integration**: Leverages Spring Boot's dependency injection, configuration, and logging
+- **Spring Boot Actuator**: Production-ready health checks and monitoring endpoints
 - **Extensible Architecture**: Easy to add new tools and resources
 
 ## Prerequisites
@@ -40,7 +41,7 @@ The server will start on `http://localhost:8080`
 
 Check server health:
 ```bash
-curl http://localhost:8080/mcp/health
+curl http://localhost:8080/actuator/health
 ```
 
 Initialize the MCP connection:
@@ -197,6 +198,10 @@ server.port=8080
 
 # Logging level
 logging.level.com.example.mcpserver=DEBUG
+
+# Actuator endpoints
+management.endpoints.web.exposure.include=health,info
+management.endpoint.health.show-details=when-authorized
 ```
 
 ## MCP Protocol Methods
@@ -208,6 +213,34 @@ The server supports the following MCP methods:
 - `tools/call`: Execute a tool
 - `resources/list`: List all available resources
 - `resources/read`: Read a resource
+
+## Actuator Endpoints
+
+Spring Boot Actuator provides production-ready monitoring and management endpoints:
+
+### Health Endpoint
+
+Check the application health status:
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+Response:
+```json
+{
+  "status": "UP"
+}
+```
+
+### Available Actuator Endpoints
+
+- `/actuator/health` - Application health information
+- `/actuator/info` - Application information (if configured)
+
+To expose additional endpoints, modify `application.properties`:
+```properties
+management.endpoints.web.exposure.include=health,info,metrics
+```
 
 ## Building for Production
 

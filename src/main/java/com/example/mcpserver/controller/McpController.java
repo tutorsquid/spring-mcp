@@ -30,9 +30,4 @@ public class McpController {
             return JsonRpcResponse.error(-32603, "Internal error: " + e.getMessage(), request.getId());
         }
     }
-
-    @GetMapping("/health")
-    public String health() {
-        return "MCP Server is running";
-    }
 }
