@@ -1,8 +1,8 @@
 package com.example.mcpserver.integration;
 
 import org.springframework.ai.mcp.client.McpClient;
-import org.springframework.ai.mcp.client.transport.ServerParameters;
-import org.springframework.ai.mcp.client.transport.StdioClientTransport;
+import org.springframework.ai.mcp.client.McpSyncClient;
+import org.springframework.ai.mcp.client.transport.SseClientTransport;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
@@ -21,17 +21,10 @@ public class McpTestConfiguration {
 
     @Bean
     public McpClient mcpClient() {
-        // Configure MCP client to connect to the local test server
-        ServerParameters serverParams = ServerParameters.builder("spring-mcp-server-test")
-            .url("http://localhost:" + port + "/mcp")
-            .build();
+        // Configure MCP client to connect to the local test server using SSE transport
+        String serverUrl = "http://localhost:" + port + "/mcp";
+        SseClientTransport transport = new SseClientTransport(serverUrl);
 
-        StdioClientTransport transport = new StdioClientTransport(serverParams);
-
-        return McpClient.sync(transport)
-            .serverInfo()
-            .name("spring-mcp-test-client")
-            .version("1.0.0")
-            .build();
+        return new McpSyncClient(transport);
     }
 }

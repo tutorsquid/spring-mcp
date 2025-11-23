@@ -23,14 +23,14 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring-ai.version>1.0.0-M6</spring-ai.version>
+        <spring-ai.version>1.1.0</spring-ai.version>
     </properties>
 
     <dependencies>
         <!-- Spring AI MCP Server with WebFlux (includes reactive web support) -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-mcp-server-webflux-spring-boot-starter</artifactId>
+            <artifactId>spring-ai-mcp-spring-boot-starter</artifactId>
         </dependency>
 
         <!-- Spring Boot Actuator for health checks and monitoring -->
