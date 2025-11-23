@@ -14,6 +14,8 @@ The Model Context Protocol (MCP) is an open protocol that enables AI assistants 
 - **WebFlux Transport**: Reactive Spring WebFlux for efficient request handling
 - **Zero Boilerplate**: No manual JSON-RPC handling or callback registration
 - **Built-in Tools**: Calculator (add, subtract, multiply, divide), echo, time, and random number
+- **Built-in Resources**: System information, configuration, documentation, and API reference
+- **Built-in Prompts**: Code review, data analysis, debugging, and documentation templates
 - **Spring Boot Actuator**: Production-ready health checks and monitoring endpoints
 - **Auto-Configuration**: Spring AI handles all MCP protocol details automatically
 
@@ -25,6 +27,12 @@ The Model Context Protocol (MCP) is an open protocol that enables AI assistants 
 │  ┌────────────────────────────────────┐ │
 │  │  @McpTool Annotated Methods        │ │
 │  │  (McpToolsService)                 │ │
+│  ├────────────────────────────────────┤ │
+│  │  @McpResource Annotated Methods    │ │
+│  │  (McpResourcesService)             │ │
+│  ├────────────────────────────────────┤ │
+│  │  @McpPrompt Annotated Methods      │ │
+│  │  (McpPromptsService)               │ │
 │  └────────────────────────────────────┘ │
 │              ↓                           │
 │  ┌────────────────────────────────────┐ │
@@ -131,6 +139,112 @@ Generates a random number between min and max (inclusive).
 - `min`: Minimum value (required)
 - `max`: Maximum value (required)
 
+## Available Resources
+
+The server automatically exposes all methods annotated with `@McpResource`:
+
+### 1. Welcome Message
+URI: `resource://welcome`
+
+A welcome message for new users introducing the Spring MCP Server.
+
+### 2. System Information
+URI: `resource://system/info`
+
+Dynamic resource providing current system information including timestamp, Java version, OS details, and memory usage. Returns JSON format.
+
+### 3. Server Configuration
+URI: `resource://config/server`
+
+Current server configuration and capabilities including protocol type, enabled features, and endpoints. Returns JSON format.
+
+### 4. Documentation
+URI: `resource://docs/{topic}`
+
+Parameterized resource providing documentation for various topics. Available topics:
+- `tools` - Documentation about MCP tools
+- `resources` - Documentation about MCP resources
+- `prompts` - Documentation about MCP prompts
+- `getting-started` - Getting started guide
+
+Returns Markdown format.
+
+### 5. API Reference
+URI: `resource://api/reference`
+
+Quick reference guide listing all available tools, resources, and prompts in plain text format.
+
+## Available Prompts
+
+The server automatically exposes all methods annotated with `@McpPrompt`:
+
+### 1. Greeting
+Name: `greeting`
+
+Generate a personalized greeting message.
+
+**Parameters:**
+- `name`: The name of the person to greet (required)
+- `timeOfDay`: Time of day - morning, afternoon, evening (optional)
+
+### 2. Code Review
+Name: `code-review`
+
+Generate a comprehensive code review prompt for analyzing code.
+
+**Parameters:**
+- `language`: The programming language (required)
+- `focusArea`: Specific aspects to focus on like security, performance, readability (optional)
+
+### 3. Data Analysis
+Name: `analyze-data`
+
+Generate a prompt for analyzing data or datasets.
+
+**Parameters:**
+- `dataType`: The type of data being analyzed (required)
+- `goal`: The analysis goal or question (required)
+- `context`: Additional context about the data (optional)
+
+### 4. Meeting Summary
+Name: `meeting-summary`
+
+Generate a prompt for creating structured meeting summaries.
+
+**Parameters:**
+- `topic`: The meeting topic or title (required)
+- `participants`: List of participants, comma-separated (optional)
+
+### 5. Debug Helper
+Name: `debug-helper`
+
+Generate a systematic debugging prompt for troubleshooting issues.
+
+**Parameters:**
+- `issue`: The error message or issue description (required)
+- `stack`: The technology stack or environment (required)
+- `attemptedSolutions`: What has been tried already (optional)
+
+### 6. Documentation Generator
+Name: `generate-docs`
+
+Generate a prompt for creating technical documentation.
+
+**Parameters:**
+- `component`: The component or feature to document (required)
+- `audience`: Target audience - developers, users, admins (required)
+- `format`: Documentation format - markdown, html, javadoc (optional)
+
+### 7. SQL Helper
+Name: `sql-helper`
+
+Generate a prompt for building SQL queries based on requirements.
+
+**Parameters:**
+- `requirement`: Description of the data to retrieve or modify (required)
+- `dbType`: The database type like MySQL, PostgreSQL (optional)
+- `performance`: Performance considerations like indexes, optimization (optional)
+
 ## Project Structure
 
 ```
@@ -139,7 +253,9 @@ src/
 │   ├── java/com/example/mcpserver/
 │   │   ├── McpServerApplication.java        # Main application
 │   │   └── service/
-│   │       └── McpToolsService.java         # Tools with @McpTool annotations
+│   │       ├── McpToolsService.java         # Tools with @McpTool annotations
+│   │       ├── McpResourcesService.java     # Resources with @McpResource annotations
+│   │       └── McpPromptsService.java       # Prompts with @McpPrompt annotations
 │   └── resources/
 │       └── application.properties           # Configuration
 └── test/
@@ -190,6 +306,125 @@ Spring AI automatically:
 **@McpToolParam**
 - `description`: Parameter description
 - `required`: Whether parameter is required (true/false)
+
+## Adding New Resources
+
+Resources are read-only data or content that clients can access. Adding resources is simple with Spring AI's `@McpResource` annotation.
+
+### Step 1: Create a method and annotate it
+
+```java
+@Service
+public class MyResourcesService {
+
+    @McpResource(
+        uri = "resource://company/info",
+        name = "Company Information",
+        description = "Information about the company",
+        mimeType = "application/json"
+    )
+    public Map<String, Object> getCompanyInfo() {
+        Map<String, Object> info = new HashMap<>();
+        info.put("name", "Acme Corp");
+        info.put("founded", 2020);
+        info.put("industry", "Technology");
+        return info;
+    }
+}
+```
+
+### Step 2: That's it!
+
+Spring AI automatically:
+- Discovers your `@McpResource` annotated methods
+- Registers them with the MCP server
+- Makes them accessible via the resource URI
+- Handles all protocol communication
+
+### Annotation Details
+
+**@McpResource**
+- `uri`: Resource URI (e.g., "resource://my/resource" or "resource://docs/{id}")
+- `name`: Resource name (shown to AI clients)
+- `description`: What the resource provides
+- `mimeType`: Content type (e.g., "text/plain", "application/json", "text/markdown")
+
+**@McpResourceParam** (for parameterized URIs)
+- `description`: Parameter description
+
+### Resource URI Patterns
+
+Static resources:
+```java
+@McpResource(uri = "resource://config")
+public String getConfig() { ... }
+```
+
+Parameterized resources:
+```java
+@McpResource(uri = "resource://user/{id}")
+public String getUser(@McpResourceParam String id) { ... }
+```
+
+## Adding New Prompts
+
+Prompts are reusable templates that help structure interactions with language models. Adding prompts is simple with Spring AI's `@McpPrompt` annotation.
+
+### Step 1: Create a method and annotate it
+
+```java
+@Service
+public class MyPromptsService {
+
+    @McpPrompt(
+        name = "explain-code",
+        description = "Generate a prompt for explaining code functionality"
+    )
+    public String explainCode(
+        @McpPromptParam(description = "Programming language", required = true)
+        String language,
+
+        @McpPromptParam(description = "Detail level (basic, intermediate, advanced)", required = false)
+        String level
+    ) {
+        String detailLevel = level != null ? level : "intermediate";
+        return String.format(
+            "Please explain the following %s code at a %s level:\n\n" +
+            "Include:\n" +
+            "1. What the code does\n" +
+            "2. Key concepts used\n" +
+            "3. How it works step by step\n",
+            language, detailLevel
+        );
+    }
+}
+```
+
+### Step 2: That's it!
+
+Spring AI automatically:
+- Discovers your `@McpPrompt` annotated methods
+- Registers them with the MCP server
+- Generates parameter schemas from `@McpPromptParam` annotations
+- Handles all protocol communication
+
+### Annotation Details
+
+**@McpPrompt**
+- `name`: Prompt name (used by AI clients to invoke the prompt)
+- `description`: What the prompt template does
+
+**@McpPromptParam**
+- `description`: Parameter description
+- `required`: Whether parameter is required (true/false)
+
+### Prompt Templates Best Practices
+
+1. **Structure your prompts clearly**: Use sections, bullet points, and numbered lists
+2. **Make them flexible**: Use parameters to customize the prompt for different scenarios
+3. **Provide context**: Include relevant background information in the template
+4. **Be specific**: Clear instructions lead to better results
+5. **Use markdown**: Format your prompts for readability
 
 ## Configuration
 
@@ -336,18 +571,18 @@ This project uses standard Java code conventions and Spring Boot best practices.
 ### Before (Custom Implementation)
 - Manual JSON-RPC request/response handling
 - Custom controller and service layers
-- Manual tool schema definition
+- Manual tool/resource/prompt schema definition
 - Manual callback registration
 - 15+ source files
 
 ### After (Spring AI)
-- Annotation-driven (`@McpTool`)
+- Annotation-driven (`@McpTool`, `@McpResource`, `@McpPrompt`)
 - Auto-configuration
 - Auto-discovery and registration
 - Zero boilerplate
-- 2 source files
+- 4 source files (1 app + 3 services)
 
-**Result:** 85% less code, production-ready MCP server in minutes!
+**Result:** 85% less code, production-ready MCP server with tools, resources, and prompts in minutes!
 
 ## License
 
